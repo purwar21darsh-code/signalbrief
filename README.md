@@ -61,12 +61,13 @@ npm run typecheck                    # TypeScript check
 npm test                             # unit and mocked integration tests
 npm run test:e2e:install             # download Playwright Chromium
 npm run test:e2e                     # browser end-to-end flow
+npm run test:e2e:postgres            # production server + migrated PostgreSQL flow (set DATABASE_URL)
 npm run build:postgres               # production Next build with PostgreSQL client
 npm run db:migrate:deploy            # apply PostgreSQL migrations
 npm start                            # serve a completed Next build
 ```
 
-For e2e tests, `npm run test:e2e` prepares an isolated SQLite database in the operating system temp directory and runs against a production Next.js build; see [Testing](docs/TESTING.md).
+For e2e tests, `npm run test:e2e` prepares an isolated SQLite database in the operating system temp directory and runs against a production Next.js build. To exercise a migrated PostgreSQL database with the PostgreSQL production build, set `DATABASE_URL`, run `npm run db:migrate:deploy` and `npm run build:postgres`, then use `npm run test:e2e:postgres`; see [Testing](docs/TESTING.md).
 
 ## Configuration
 

@@ -73,7 +73,7 @@ Do not use `prisma db push` on production data; apply reviewed migrations.
 
 ## Verification status for this workspace
 
-The PostgreSQL-targeted Next.js production build and PostgreSQL Prisma schema validation succeeded. The migration was reviewed against the schema but was not applied to a live database. Docker Compose startup was not exercised because Docker Engine is unavailable in the development environment. No live Tavily or Bifrost call was made because API credentials are not configured.
+The PostgreSQL-targeted Next.js production build and PostgreSQL Prisma schema validation succeeded. The checked-in migration was applied to an isolated temporary PostgreSQL 18 cluster, and the production build passed a browser workflow against it, including persistent briefing creation, source inspection and PDF download. Docker Desktop was installed per-user, but its engine remained in `starting` and timed out on engine health checks, so Docker Compose startup was not exercised. No live Tavily or Bifrost call was made because API credentials are not configured.
 
 ## Environment variables
 

@@ -9,6 +9,7 @@ npm run typecheck
 npm test
 npm run test:e2e:install
 npm run test:e2e
+npm run test:e2e:postgres # after setting DATABASE_URL, migrating and building for PostgreSQL
 npm run build:postgres
 ```
 
@@ -22,6 +23,7 @@ npm run build:postgres
 - Persistence: Prisma relation and source/claim association behavior against local SQLite.
 - PDF: Playwright Chromium renders a PDF buffer with a `%PDF-` header and errors if it cannot fit on one A4 page.
 - E2E: opens the app, pre-fills the archived Microsoft example, starts its clearly labelled fixture run, opens the saved report/source modal and downloads PDF.
+- PostgreSQL E2E: runs the same browser workflow against the existing PostgreSQL production build and a migrated PostgreSQL database without rebuilding over it.
 
 ## Live integration smoke check
 
@@ -34,8 +36,9 @@ After configuring valid `TAVILY_API_KEY`, `BIFROST_BASE_URL`, `BIFROST_API_KEY` 
 | `npm test` | Passed: 23 tests in 3 files, including mocked Tavily/Bifrost tests and one React Testing Library test. |
 | `npm run typecheck` | Passed. |
 | `npm run test:e2e` | Passed: 1 browser flow covering archived briefing creation, source inspection and PDF download. |
+| `npm run test:e2e:postgres` | Passed: the production server used PostgreSQL 18 and completed the same briefing, citation and PDF browser flow. |
 | `npm run build:postgres` | Passed: optimized Next.js production build using the PostgreSQL Prisma client. |
 | `npm audit` | Passed: 0 reported vulnerabilities. |
 | `npx prisma validate --schema=prisma/schema.postgresql.prisma` | Passed. PostgreSQL migration SQL was compared to the current schema; the only generated diff was the default `public` schema declaration. |
 
-The live Tavily and Bifrost APIs were not called because this workspace has no API credentials. The mocked tests are not evidence of live service availability. Docker build/Compose startup and applying the PostgreSQL migration against a server were not run: Docker Engine and a PostgreSQL server are unavailable in this environment. Chromium was available and the PDF download was exercised in Playwright.
+The live Tavily and Bifrost APIs were not called because this workspace has no API credentials. The mocked tests are not evidence of live service availability. Docker build/Compose startup was not run: Docker Desktop was installed per-user, but the engine remained in `starting` and its health checks timed out. PostgreSQL migration deployment and production E2E were verified against an isolated temporary PostgreSQL 18 cluster bound to loopback; it was not the user's existing password-protected PostgreSQL service. Chromium was available and the PDF download was exercised in Playwright.
