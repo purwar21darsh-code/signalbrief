@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Meeting {
+  id                String     @id @default(uuid())
+  entityName        String
+  entityType        String     @default("company") // "company" | "person"
+  meetingDateTime   DateTime
+  timezone          String     @default("UTC")
+  meetingPurpose    String     // "sales" | "partnership" | "investment" | "interview" | "business_development" | "general"
+  objective         String?
+  additionalContext String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  briefings         Briefing[]
+}
+
+model Briefing {
+  id                  String        @id @default(uuid())
+  meetingId           String
+  meeting             Meeting       @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  status              String        @default("pending") // "pending" | "researching" | "completed" | "failed"
+  lastError           String?
+  isDemo              Boolean       @default(false)
+  executiveSummary    String?
+  findingsJson        String?       // JSON array of verified developments
+  implicationsJson    String?       // JSON array of strategic implications
+  questionsJson       String?       // JSON array of 4-6 targeted questions
+  watchlistJson       String?       // JSON array of uncertainties, risks, missing info
+  wordCount           Int?          @default(0)
+  qualityScore        Float?
+  researchWindowStart DateTime
+  researchWindowEnd   DateTime
+  generatedAt         DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  researchRuns        ResearchRun[]
+  sources             Source[]
+  claims              Claim[]
+
+  @@index([meetingId])
+  @@index([status])
+}
+
+model ResearchRun {
+  id           String    @id @default(uuid())
+  briefingId   String
+  briefing     Briefing  @relation(fields: [briefingId], references: [id], onDelete: Cascade)
+  stage        String    // e.g. "SEARCH", "EVIDENCE", "BRIEFING"
+  status       String    // "in_progress" | "completed" | "failed"
+  logsJson     String?   // JSON array of event logs
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  errorMessage String?
+
+  @@index([briefingId])
+}
+
+model Source {
+  id               String        @id @default(uuid())
+  briefingId       String
+  briefing         Briefing      @relation(fields: [briefingId], references: [id], onDelete: Cascade)
+  title            String
+  url              String
+  domain           String
+  publicationDate  String?       // ISO date or "unknown"
+  extractedContent String?
+  sourceType       String        @default("news")
+  credibilityScore Float         @default(0.8)
+  searchScore      Float?
+  relevanceScore   Float?
+  searchQuery      String?
+  searchAngle      String?
+  createdAt        DateTime      @default(now())
+
+  claimSources     ClaimSource[]
+
+  @@index([briefingId])
+}
+
+model Claim {
+  id                 String        @id @default(uuid())
+  briefingId         String
+  briefing           Briefing      @relation(fields: [briefingId], references: [id], onDelete: Cascade)
+  text               String
+  eventDate          String?
+  verificationStatus String        @default("uncertain") // "verified" | "disputed" | "uncertain"
+  confidenceLevel    String        @default("low")     // "high" | "medium" | "low"
+  reasoning          String?
+  createdAt          DateTime      @default(now())
+
+  claimSources       ClaimSource[]
+
+  @@index([briefingId])
+  @@index([verificationStatus])
+}
+
+model ClaimSource {
+  id       String @id @default(uuid())
+  claimId  String
+  sourceId String
+  claim    Claim  @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  source   Source @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@unique([claimId, sourceId])
+  @@index([claimId])
+  @@index([sourceId])
+}
